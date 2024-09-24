@@ -1,0 +1,15 @@
+torch -i https://download.pytorch.org/whl/cu118
+torchvision -i https://download.pytorch.org/whl/cu118
+torchaudio -i https://download.pytorch.org/whl/cu118
+ftfy
+packaging
+regex
+tqdm
+albumentations==1.4.2
+rdkit==2023.3.2
+numpy
+opencv-python
+wandb
+git+https://github.com/openai/CLIP.git
+cairosvg
+kneed
