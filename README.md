@@ -4,13 +4,13 @@ MoleCLIP is a molecular representation learning framework that accepts images of
 The reliance on CLIP as a foundation model enables MoleCLIP to train in a few-shot manner on significantly less molecular pretraining data than training from scratch. Additionally, it contributes to MoleCLIP's robustness to distribution shifts, which is the ability to maintain performance on new tasks or domains that differ from those used in training.
 
 ## Dependencies
-MoleCLIP requires Python 3.7 or newer.
+MoleCLIP requires Python 3.8 or newer (we used python 3.11).
 To avoid conflicts with existing packages, it's recommended to create a new conda environment before installation.
 To install the necessary dependencies, navigate to the MoleCLIP directory and run the following:
 
 Create a new conda environment:
 ```
-conda create -n MoleCLIP python=3.7
+conda create -n MoleCLIP python=3.11
 conda activate MoleCLIP
 ```
 
@@ -24,9 +24,11 @@ pip install -r requirements.txt
 Before starting the pretraining process, ensure your dataset files are correctly formatted and in the appropriate directory.
 Dataset Format
 A dataset file should be a CSV containing the following four columns: indices, smiles, classes_1, and classes_2. The class columns refer to the pseudo-labels assigned by a fingerprint-based clustering procedure.
-#### Example Usage
-To generate the necessary CSV file and corresponding pretraining images:
-1. Place a text file containing molecular SMILES strings (one per line) in the Datasets folder within a subfolder named after the dataset. For example, for the chembl_25_subset dataset, the file path should be: MoleCLIP/Datasets/chembl_25_subset/chembl_25_subset.txt
+
+#### Example Usage with a ChEMBL Subset
+To illustrate the process, we've created a small subset of the ChEMBL25 dataset, which includes 3,000 molecules.
+##### Steps to Generate the Dataset CSV and Pretraining Images:
+1. Prepare a .txt file containing the molecular SMILES strings, one per line. Place this file in the Datasets folder within a subdirectory named after your dataset. For example, for the chembl_25_subset, the file should be located at: MoleCLIP/Datasets/Pretraining/chembl_25_subset/chembl_25_subset.txt
 2. Generate the dataset CSV and pretraining images by running the following commands:
 ```
 cd Code/Preprocessing
@@ -62,7 +64,7 @@ python Pretrain.py
 
 ## Finetuning
 ### Dataset Format
-For finetuning, the dataset should be a CSV file containing three columns: indices, smiles, and labels. The labels should be numeric, representing the target values. If a molecule has multiple labels, separate them with spaces. The CSV file should be placed in the Datasets folder within a subfolder named after the dataset. For example, for the BACE dataset, the file path should be: MoleCLIP/Datasets/bace/bace.csv
+For finetuning, the dataset should be a CSV file containing three columns: indices, smiles, and labels. The labels should be numeric, representing the target values. If a molecule has multiple labels, separate them with spaces. The CSV file should be placed in the Datasets folder within a subfolder named after the dataset. For example, for the BACE dataset, the file path should be: MoleCLIP/Datasets/Finetuning/bace/bace.csv
 
 ### Data generation
 To generate images before finetuning, use the following command:
