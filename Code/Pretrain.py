@@ -161,7 +161,7 @@ def train_model(model, train_dataset, val_dataset, args, run_name = '',
             if step % args.eval_every == 0:
                 print ("start evaluation:")
                 with torch.no_grad():
-                    it_dir = ft_eval(model, val_dataset, classes, args = args, eval_part = 1, device = device)
+                    it_dir = pt_eval(model, val_dataset, classes, args = args, eval_part = 1, device = device)
                 
                 it_dir.update({'specs/eval time': time.time() - temp_time})
 

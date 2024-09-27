@@ -43,7 +43,7 @@ def pt_eval(model, val_dataset, classes, args, eval_part = 1 ,device = "cuda"):
         cls_1_preds = model.cls_1(image1_features)
         cls_2_preds = model.cls_2(image1_features)
 
-        logits_per_image1, logits_per_image2 = features_to_logits (model, image1_features, image2_features, args.singles_temp)
+        logits_per_image1, logits_per_image2 = features_to_logits (model, image1_features, image2_features, args.temperature)
 
 
         loss_singles = (CNE(logits_per_image1, labels) + CNE(logits_per_image2, labels))/2
