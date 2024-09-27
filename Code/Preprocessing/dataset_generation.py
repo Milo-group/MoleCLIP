@@ -70,7 +70,7 @@ def gen_fingerprints(smi, radius = 2, bits = 1024, fp_type = "rdkit"):
 
 def gen_imgs(smi):
 
-    cp_path = f"{args.dataset_path}/{args.dataset_name}"
+    cp_path = f"{args.datasets_path}/{args.dataset_name}"
 
     try:
 
@@ -92,7 +92,7 @@ def gen_imgs(smi):
 def fix_numbering(data_length):
     
     count = 0
-    cp_path = f"{args.dataset_path}/{args.dataset_name}"
+    cp_path = f"{args.datasets_path}/{args.dataset_name}"
 
     with tqdm(total=data_length) as pbar:
         for i in range(data_length):
@@ -114,10 +114,10 @@ def unite(data, args):
     data = [data]
     
     for k in args.k_values:
-        with open(f"{args.dataset_path}/{args.dataset_name}/classes/cluster_{args.fp_type}_{k}.csv", 'r') as file:
+        with open(f"{args.datasets_path}/{args.dataset_name}/classes/cluster_{args.fp_type}_{k}.csv", 'r') as file:
             data.append([i[1] for i in list(csv.reader(file))[1:]])
 
-    with open(f"{args.dataset_path}/{args.dataset_name}/{args.dataset_name}.csv", 'w') as file:
+    with open(f"{args.datasets_path}/{args.dataset_name}/{args.dataset_name}.csv", 'w') as file:
         classes_str = ",".join([f"classes_{k}" for k in args.k_values])
         len_classes = len (args.k_values)
 
@@ -135,7 +135,7 @@ def parse_args():
 
     # Argument parsing
     parser = argparse.ArgumentParser(description='K-means clustering for molecular datasets')
-    parser.add_argument('-dataset_path', type=str, default="../../Datasets", help='Path to the directory containing the dataset.')
+    parser.add_argument('-datasets_path', type=str, default="../../Datasets", help='Path to the directory containing the dataset.')
     parser.add_argument('-dataset_name', type=str, default="chembl_25", help='Name of the dataset to be processed.')
     parser.add_argument('-dataset_type', type=str, default="pretraining", choices=["pretraining", "finetuning"], help='Type of dataset to process: "pretraining" or "finetuning".')
     parser.add_argument('-fp_type', type=str, default="maccs", choices=["maccs", "rdkit", "morgan", "descriptors"], help='Type of molecular fingerprints to generate: "maccs", "rdkit", "morgan", or "descriptors".')
@@ -162,9 +162,10 @@ if __name__ == "__main__":
 
     args = parse_args()
 
-    full_path = f"{args.dataset_path}/{args.dataset_name}"
-
     if args.dataset_type == "pretraining":
+        
+        args.datasets_path += "/Pretraining"
+        full_path = f"{args.datasets_path}/{args.dataset_name}"
         
         file_path = f"{full_path}/{args.dataset_name}.txt"
 
@@ -243,6 +244,8 @@ if __name__ == "__main__":
 
     if args.dataset_type == "finetuning":
 
+        args.datasets_path += "/Finetuning"
+        full_path = f"{args.datasets_path}/{args.dataset_name}"
         file_path = f"{full_path}/{args.dataset_name}.csv"
 
         with open(file_path, "r") as csv_file:    

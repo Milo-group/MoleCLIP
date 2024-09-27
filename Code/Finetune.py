@@ -187,7 +187,7 @@ def train_model(model, train_dataset, val_dataset, test_dataset, hp, labels_len,
 
         if args.epochs_cp > 0:
             if not os.path.isdir(f"{args.cp_path}/finetuning"):
-                os.mkdir(f"{args.dataset_path}/{args.dataset_name}/finetuning") 
+                os.mkdir(f"{args.datasets_path}/{args.dataset_name}/finetuning") 
 
             if (epoch + 1) % cp_every == 0:
                 if not os.path.isdir(f"{args.cp_path}/finetuning/{run_name}"):
@@ -270,7 +270,7 @@ def main(pg, args):
                 for r in range (args.repeats):
                     
                     #load dataset
-                    train_dataset, val_dataset, test_dataset, labels_len = Load_finetuning_dataset (args.dataset_path, dataset_name, args.dataset_type, splitter = hp['splitting'], 
+                    train_dataset, val_dataset, test_dataset, labels_len = Load_finetuning_dataset (args.datasets_path, dataset_name, args.dataset_type, splitter = hp['splitting'], 
                                                                                                     val_size = args.val_test_ratio, test_size = args.val_test_ratio, batch_size = hp['batch'],
                                                                                                     seed = seed, aug = hp['augmentation'], device = args.device)   
                     print ("datasets were sucssesfully loaded")
@@ -351,7 +351,7 @@ def parse_args():
     parser.add_argument('-random_seeds', default=[1], nargs='+', type=int, help='Random seeds for reproducibility in data splitting.')
     parser.add_argument('-repeats', default=1, type=int, help='Number of training repeats per hyperparameter set.')
 
-    parser.add_argument('-dataset_path', default="../Datasets", type=str, help='Path to the directory containing the dataset.')
+    parser.add_argument('-datasets_path', default="../Datasets/Finetuning", type=str, help='Path to the directory containing the dataset.')
     parser.add_argument('-dataset_names', default=["bace"], nargs='+', type=str, help='Names of the dataset to be used.')
     parser.add_argument('-dataset_type', default="images", type=str, choices=["images", "smiles"], help='Format of the dataset: "images" or "SMILES".')
     parser.add_argument('-splitting', default=["random"], nargs='+', choices=["random", "scaffold", "random_scaffold", "none"], help='Data splitting method.')

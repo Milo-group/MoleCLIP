@@ -19,10 +19,10 @@ from .Augmentation import augmentation
 
 class DatasetImages(Dataset):
 
-    def __init__(self, dataset_path, smiles, labels = None, dataset_type = 'images', uselabels = True, aug = "none", device="cuda"):
+    def __init__(self, datasets_path, smiles, labels = None, dataset_type = 'images', uselabels = True, aug = "none", device="cuda"):
 
         self.device = device
-        self.dataset_path = dataset_path
+        self.datasets_path = datasets_path
 
         self.smiles = smiles
         self.labels = labels
@@ -34,7 +34,7 @@ class DatasetImages(Dataset):
         if dataset_type == "images":
 
             try:
-                self.len_dataset = len(os.listdir(dataset_path + "/imgs"))
+                self.len_dataset = len(os.listdir(datasets_path + "/imgs"))
             except:
                 raise(Exception("dataset folder is not exist, or no imgs folder exists in folder"))
             
@@ -47,7 +47,7 @@ class DatasetImages(Dataset):
         if self.dataset_type == 'smiles':
             img = mol_to_img(img_name, False)
         if self.dataset_type == 'images':
-            img = cv2.imread(f'{self.dataset_path}/imgs/{img_name + 1}.png')
+            img = cv2.imread(f'{self.datasets_path}/imgs/{img_name + 1}.png')
 
         return self.transform(image = img)['image']
 
@@ -71,13 +71,13 @@ class DatasetImages(Dataset):
         return self.len_dataset
     
 
-def Load_finetuning_dataset (dataset_path, dataset_name, dataset_type = "images", val_size = 0.1, test_size = 0.1, batch_size = 64, 
+def Load_finetuning_dataset (datasets_path, dataset_name, dataset_type = "images", val_size = 0.1, test_size = 0.1, batch_size = 64, 
                              seed = 1, splitter = "scaffold", uselabels = True, shuffle = True, aug = "none", device = "cuda"):
     
-    if not os.path.exists(dataset_path):
+    if not os.path.exists(datasets_path):
         raise(Exception("Datasets directory not exist"))
 
-    full_path = f"{dataset_path}/{dataset_name}"
+    full_path = f"{datasets_path}/{dataset_name}"
 
     if os.path.isfile(full_path + f"/{dataset_name}.csv"):
 
@@ -126,10 +126,10 @@ def Load_finetuning_dataset (dataset_path, dataset_name, dataset_type = "images"
     
 
 class Dataset_contrastive(Dataset):
-    def __init__(self, dataset_path, dataset_name, dataset_type = 'images', batch_size=64, img_size = 224, mix_factor = 8, aug = "none", device="cuda"):
+    def __init__(self, datasets_path, dataset_name, dataset_type = 'images', batch_size=64, img_size = 224, mix_factor = 8, aug = "none", device="cuda"):
         
         self.device = device
-        self.dataset_path = dataset_path
+        self.datasets_path = datasets_path
         self.batch_size = batch_size
         self.dataset_type = dataset_type
 
@@ -137,15 +137,15 @@ class Dataset_contrastive(Dataset):
         
         if dataset_type == "images":
             try:
-                len_dataset1 = len(os.listdir(dataset_path + "/" + "aug_1"))
-                len_dataset2 = len(os.listdir(dataset_path + "/" + "aug_2"))
+                len_dataset1 = len(os.listdir(datasets_path + "/" + "aug_1"))
+                len_dataset2 = len(os.listdir(datasets_path + "/" + "aug_2"))
             except:
                 raise(Exception("aug_1 and/or aug_2 folders are not exist"))
             
             if len_dataset1 != len_dataset2:
                 raise(Exception("aug_1 and aug_2 lengths should be equal"))
         
-        csv_path = dataset_path + "/" + dataset_name + ".csv"
+        csv_path = datasets_path + "/" + dataset_name + ".csv"
         df = pd.read_csv (csv_path)
         self.classes = [int(c.split("_")[-1]) for c in list(df.columns.values)[2:]]
         ordered_df = df.sort_values(by=[f'classes_{max(self.classes)}']) 
@@ -158,20 +158,21 @@ class Dataset_contrastive(Dataset):
         
         if dataset_type == "images":
             if len_dataset1 != ordered_df.shape[0]:
-                raise(Exception(f"Images are missing from folder ({self.len_dataset} while {self.data_df.shape[0]} should exist)"))
+                raise(Exception(f"""The number of molecular images in the dataset folder ({len_dataset1}) ins't equal to the 
+                                number of molecules in the csv file ({ordered_df.shape[0]})"""))
         
 
     def load_image_1(self, img_name):
         if self.dataset_type == "smiles":
             return self.transform(image = mol_to_img(img_name, False))['image']
         if self.dataset_type == "images":
-            return self.transform(image = cv2.imread(f'{self.dataset_path}/aug_1/{img_name}.png'))['image']
+            return self.transform(image = cv2.imread(f'{self.datasets_path}/aug_1/{img_name}.png'))['image']
     
     def load_image_2(self, img_name):
         if self.dataset_type == "smiles":
             return self.transform(image = mol_to_img(img_name, True))['image']
         if self.dataset_type == "images":
-            return self.transform(image = cv2.imread(f'{self.dataset_path}/aug_2/{img_name}.png'))['image']
+            return self.transform(image = cv2.imread(f'{self.datasets_path}/aug_2/{img_name}.png'))['image']
 
     def get_image(self, batch_index):
 
@@ -207,15 +208,15 @@ def collate_data(batch):
     return (torch.cat([i[n] for i in batch], dim = 0) for n in range(len(batch[0])))
 
 
-def Load_contrastive_dataset (dataset_path, dataset_name, dataset_type = 'images', batch_size = 64, val_size = 0.01, mix_factor = 8, shuffle = True, seed = 42, aug = "none", device = "cuda"):
+def Load_contrastive_dataset (datasets_path, dataset_name, dataset_type = 'images', batch_size = 64, val_size = 0.01, mix_factor = 8, shuffle = True, seed = 42, aug = "none", device = "cuda"):
 
-    if not os.path.exists(dataset_path):
+    if not os.path.exists(datasets_path):
         raise(Exception("Datasets directory not exist"))
 
-    if dataset_path[-1] == "/":
-        full_path = dataset_path + dataset_name
+    if datasets_path[-1] == "/":
+        full_path = datasets_path + dataset_name
     else:
-        full_path = dataset_path + "/" + dataset_name
+        full_path = datasets_path + "/" + dataset_name
    
     full_dataset = Dataset_contrastive (full_path, dataset_name, dataset_type = dataset_type, batch_size = batch_size, mix_factor = mix_factor, aug = aug, device = device)
     train_indices, val_indices, _ = random_split(list(range(len(full_dataset))), 0, val_size, seed)

@@ -28,7 +28,7 @@ def knee_point (args, xy = None):
 
     if xy == None:
         try:
-            with open(f"{args.dataset_path}/{args.dataset_name}/k_means/inetias_{args.fp_type}.txt", 'r') as f:
+            with open(f"{args.datasets_path}/{args.dataset_name}/k_means/inetias_{args.fp_type}.txt", 'r') as f:
                 inertias = list(csv.reader(f, delimiter=","))
         except:
             raise(Exception("inertias file is not exist"))
@@ -74,7 +74,7 @@ def plot_figure(x, y, kl, args):
     # Set background color
     ax.set_facecolor('white')
 
-    fig.savefig(f"{args.dataset_path}/{args.dataset_name}/k_means/kneepoint_{args.fp_type}.png")
+    fig.savefig(f"{args.datasets_path}/{args.dataset_name}/k_means/kneepoint_{args.fp_type}.png")
     
 
 
@@ -149,11 +149,11 @@ def train(data, args):
         log (bool): Flag to log results.
     """
 
-    if not os.path.isdir(f"{args.dataset_path}/{args.dataset_name}/k_means"):
-        os.mkdir(f"{args.dataset_path}/{args.dataset_name}/k_means") 
+    if not os.path.isdir(f"{args.datasets_path}/{args.dataset_name}/k_means"):
+        os.mkdir(f"{args.datasets_path}/{args.dataset_name}/k_means") 
     
-    if not os.path.isdir(f"{args.dataset_path}/{args.dataset_name}/k_means/{args.fp_type}"):
-        os.mkdir(f"{args.dataset_path}/{args.dataset_name}/k_means/{args.fp_type}") 
+    if not os.path.isdir(f"{args.datasets_path}/{args.dataset_name}/k_means/{args.fp_type}"):
+        os.mkdir(f"{args.datasets_path}/{args.dataset_name}/k_means/{args.fp_type}") 
 
 
     if args.k_values == [0]:
@@ -163,14 +163,14 @@ def train(data, args):
             args.k_values = list(range(2,101,2))
 
     if args.log:
-        file = open(f"{args.dataset_path}/{args.dataset_name}/k_means/inetias_{args.fp_type}.txt", 'a')
+        file = open(f"{args.datasets_path}/{args.dataset_name}/k_means/inetias_{args.fp_type}.txt", 'a')
 
     for k in args.k_values:
         model, inertia = calc_kmeans(k, data, args)
         print(f'K={k}, Inertia={inertia}')
         if args.log:
             file.write(f"{k}, {inertia}\n")
-            joblib.dump(model, f'{args.dataset_path}/{args.dataset_name}/k_means/{args.fp_type}/model_{k}.joblib')
+            joblib.dump(model, f'{args.datasets_path}/{args.dataset_name}/k_means/{args.fp_type}/model_{k}.joblib')
 
     if args.log:
         file.close()
@@ -187,19 +187,19 @@ def inference(data, args):
     if args.k_values == [0]:
         args.k_values = [10]
 
-    if not os.path.isdir(f"{args.dataset_path}/{args.dataset_name}/classes"):
-        os.mkdir(f"{args.dataset_path}/{args.dataset_name}/classes") 
+    if not os.path.isdir(f"{args.datasets_path}/{args.dataset_name}/classes"):
+        os.mkdir(f"{args.datasets_path}/{args.dataset_name}/classes") 
     
-    if not os.path.isdir(f"{args.dataset_path}/{args.dataset_name}/k_means"):
+    if not os.path.isdir(f"{args.datasets_path}/{args.dataset_name}/k_means"):
         raise(Exception("kmeans directory is not exist"))
 
-    if not os.path.isdir(f"{args.dataset_path}/{args.dataset_name}/k_means/{args.fp_type}"):
+    if not os.path.isdir(f"{args.datasets_path}/{args.dataset_name}/k_means/{args.fp_type}"):
         raise(Exception(f"kmeans directory is not exist for {args.fp_type}"))
 
     for k in args.k_values:
 
         try:
-            kmeans = joblib.load(f'{args.dataset_path}/{args.dataset_name}/k_means/{args.fp_type}/model_{k}.joblib')
+            kmeans = joblib.load(f'{args.datasets_path}/{args.dataset_name}/k_means/{args.fp_type}/model_{k}.joblib')
             print (f"model-{k} inference")
         
         except:
@@ -211,7 +211,7 @@ def inference(data, args):
         if args.fp_type == "descriptors": 
             scaler = MinMaxScaler()
 
-        with open(f"{args.dataset_path}/{args.dataset_name}/classes/cluster_{args.fp_type}_{k}.csv", 'a') as file:
+        with open(f"{args.datasets_path}/{args.dataset_name}/classes/cluster_{args.fp_type}_{k}.csv", 'a') as file:
             file.write(f"indices, classes\n")
             with tqdm(total=len(batch_list)) as pbar:
                 for batch_idx, batch in enumerate(batch_list):
@@ -231,7 +231,7 @@ def parse_args():
 
     # Argument parsing
     parser = argparse.ArgumentParser(description='K-means clustering')
-    parser.add_argument('-dataset_path', type=str, default="../../Datasets", help='dataset path')
+    parser.add_argument('-datasets_path', type=str, default="../../Datasets/Pretraining", help='dataset path')
     parser.add_argument('-dataset_name', type=str, default="chembl_25", help='Name of the dataset')
     parser.add_argument('-fp_type', type=str, default="maccs", help='Type of fingerprints')
     parser.add_argument('-k_values', default = [0], nargs='+', type=int, help='k_values to use')
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     args = parse_args()
 
-    file_path = f"{args.dataset_path}/{args.dataset_name}/FP/fingerprints_{args.fp_type}.txt"
+    file_path = f"{args.datasets_path}/{args.dataset_name}/FP/fingerprints_{args.fp_type}.txt"
 
     try:
         with open(file_path, 'r') as file:

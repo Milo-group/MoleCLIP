@@ -202,7 +202,7 @@ def run_config(args, train_dataset, val_dataset, classes):
 
 def main(args):
 
-    train_dataset, val_dataset, classes = Load_contrastive_dataset(args.dataset_path, args.dataset_name, args.dataset_type, batch_size = args.batch, 
+    train_dataset, val_dataset, classes = Load_contrastive_dataset(args.datasets_path, args.dataset_name, args.dataset_type, batch_size = args.batch, 
                                                                    val_size = args.val_ratio, mix_factor = args.mix_factor, aug = args.augmentation, 
                                                                    device = args.device)
     print ("datasets were sucssesfully loaded")
@@ -265,7 +265,7 @@ def parse_args():
     parser.add_argument('-log_every', type=int, default=150, help='Iteration interval for logging.')
     parser.add_argument('-eval_every', type=int, default=750, help='Number of epochs between evaluations.')
   
-    parser.add_argument('-dataset_path', type=str, default="../Datasets", help='Path to the directory containing the dataset.')
+    parser.add_argument('-datasets_path', type=str, default="../Datasets/Pretraining", help='Path to the directory containing the dataset.')
     parser.add_argument('-dataset_name', type=str, default="chembl_25", help='Name of the dataset to be used.')
     parser.add_argument('-dataset_type', type=str, default="images", choices=["images", "smiles"], help='Format of the dataset: "images" or "SMILES".')
 
