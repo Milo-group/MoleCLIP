@@ -28,7 +28,7 @@ A dataset file should be a CSV containing the following four columns: indices, s
 #### Example Usage with a ChEMBL Subset
 To illustrate the process, we've created a small subset of the ChEMBL25 dataset, which includes 3,000 molecules.
 ##### Steps to Generate the Dataset CSV and Pretraining Images:
-1. Prepare a .txt file containing the molecular SMILES strings, one per line. Place this file in the Datasets folder within a subdirectory named after your dataset. For example, for the chembl_25_subset, the file should be located at: MoleCLIP/Datasets/Pretraining/chembl_25_subset/chembl_25_subset.txt
+1. Prepare a .txt file containing the molecular SMILES strings, one per line. Place this file in the Datasets/Pretraining folder within a subdirectory named after your dataset. For example, for the chembl_25_subset, the file should be located at: MoleCLIP/Datasets/Pretraining/chembl_25_subset/chembl_25_subset.txt
 2. Generate the dataset CSV and pretraining images by running the following commands:
 ```
 cd Code/Preprocessing
