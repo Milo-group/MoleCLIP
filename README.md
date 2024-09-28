@@ -34,7 +34,7 @@ To illustrate the process, we've created a small subset of the ChEMBL25 dataset,
 cd Code/Preprocessing
 python dataset_generation.py -dataset_name chembl_25_subset
 ```
-**Note:** This command will generate both the dataset CSV and the corresponding training images (which is recommended). To skip the image generation step and generate images on the fly (which may slow down the pretraining process), use the **-function fp_clustering** argument. However, this approach will rely on CPU processing during training, which can significantly increase the pretraining time.
+**Note:** This command will generate both the dataset CSV and the corresponding training images (which is recommended). To skip the pre-training image generation step, use the **-function fp_clustering** argument. However, this approach will necessitate generating images on the fly, a process that relies on CPU, and will probably increase the pretraining time significantly.
 
 3. To run the pretraining on the chembl_25_subset dataset:
 ```
