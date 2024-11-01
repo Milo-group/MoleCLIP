@@ -236,7 +236,7 @@ def main(args):
         checkpoint = None
 
     if args.wandb:
-        wandb.login(key = wandb_key)
+        wandb.login(key = args.wandb_key)
         run = wandb.init(project=args.wandb_project, name = run_name, config = config)
     
     train_model (model, train_dataset, val_dataset, args, run_name, checkpoint, classes, device = args.device)
