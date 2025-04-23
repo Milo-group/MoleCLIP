@@ -10,6 +10,7 @@ import torch
 import torchvision
 from torch import nn
 import numpy as np
+import pandas as pd
 
 from sklearn.model_selection import ParameterGrid
 
@@ -56,9 +57,15 @@ def train_model(model, train_dataset, val_dataset, test_dataset, hp, labels_len,
     print (f"dataset: {dataset_name}")
     print (f"parameters: {hp}")
 
-    ff_head = create_mlp(inner_layers = hp['layers'], inner_dim = hp['d_ff'], dropout_rate = hp['dropout'], output_dim = labels_len).to(device)
     
-    optim1 = torch.optim.Adam(model.model_image.parameters(), lr = hp['lr_bb'], betas=(0.9,0.98), eps=1e-6, weight_decay=hp['wd']) 
+    
+    if model != None:
+        ff_head = create_mlp(inner_layers = hp['layers'], inner_dim = hp['d_ff'], dropout_rate = hp['dropout'], output_dim = labels_len).to(device)
+        optim1 = torch.optim.Adam(model.model_image.parameters(), lr = hp['lr_bb'], betas=(0.9,0.98), eps=1e-6, weight_decay=hp['wd']) 
+
+    else:
+        ff_head = create_mlp(input_dim = 2048, inner_layers = hp['layers'], inner_dim = hp['d_ff'], dropout_rate = hp['dropout'], output_dim = labels_len).to(device)
+
     optim2 = torch.optim.Adam(ff_head.parameters(), lr = hp['lr_ff'], weight_decay=hp['wd'])
 
     if checkpoint != None and 'optimizer' in checkpoint:
@@ -92,10 +99,14 @@ def train_model(model, train_dataset, val_dataset, test_dataset, hp, labels_len,
             optim1.zero_grad() 
             optim2.zero_grad() 
             
-            images, labels = next(epoch_it)
+            if model != None:
+                images, labels = next(epoch_it)
+                embeddings = model.model_image(images).float()
+                output = ff_head(embeddings)
             
-            embeddings = model.model_image(images).float()
-            output = ff_head(embeddings)
+            else:
+                fp, labels = next(epoch_it)
+                output = ff_head(fp)
 
             loss = loss_func(output, labels)
 
@@ -162,7 +173,12 @@ def train_model(model, train_dataset, val_dataset, test_dataset, hp, labels_len,
                     
                     if args.save_predictions:
                         res_df = pd.DataFrame(current_predictions)
-                        res_df.to_csv(f"Predictions/test-in-min/{run_name}test-in-min.csv")
+                        res_df.to_csv(f"../Predictions/test-in-min/{run_name}test-in-min.csv")
+
+                        if not os.path.isdir(f"{args.cp_path}/finetuning"):
+                            os.mkdir(f"{args.cp_path}/finetuning") 
+                            
+                        save_checkpoint(model, optim1, f"{args.cp_path}/finetuning", run_name, "best_val", step, optim2=optim2, head = ff_head)
 
                     if args.wandb:
                         wandb.log(it_dir, step = step)
@@ -179,7 +195,11 @@ def train_model(model, train_dataset, val_dataset, test_dataset, hp, labels_len,
 
                     if args.save_predictions:
                         res_df = pd.DataFrame(current_predictions)
-                        res_df.to_csv(f"Predictions/best/{run_name}best.csv")
+                        res_df.to_csv(f"../Predictions/best/{run_name}best.csv")
+
+                        if not os.path.isdir(f"{args.cp_path}/finetuning"):
+                            os.mkdir(f"{args.cp_path}/finetuning") 
+                        save_checkpoint(model, optim1, f"{args.cp_path}/finetuning", run_name, "best_test", step, optim2=optim2, head = ff_head)
 
                     if args.wandb:
                         wandb.log(it_dir, step = step)
@@ -192,7 +212,7 @@ def train_model(model, train_dataset, val_dataset, test_dataset, hp, labels_len,
             if (epoch + 1) % cp_every == 0:
                 if not os.path.isdir(f"{args.cp_path}/finetuning/{run_name}"):
                     os.mkdir(f"{args.cp_path}/finetuning/{run_name}")              
-                save_checkpoint(model, optim1, None, args.cp_path, f"finetuning/{run_name}", epoch+1, step, optim2=optim2)
+                save_checkpoint(model, optim1, args.cp_path, f"finetuning/{run_name}", epoch+1, step, optim2=optim2)
     
     print ("""
     
@@ -206,16 +226,23 @@ def train_model(model, train_dataset, val_dataset, test_dataset, hp, labels_len,
 
 def load_model(hp, args, idx, r, dataset_name, seed):
 
-    model = Model(args.vit_model, args.no_parallel, args.device, classes = []).to(args.device)
+    if args.dataset_type != "fp":
 
-    full_cp_name = f"{hp['cp'].split(' - ')[0]}/{hp['cp']}"
-    model_path = f"{args.cp_path}/{full_cp_name}"
+        model = Model(args.vit_model, args.no_parallel, args.device, classes = []).to(args.device)
 
-    checkpoint = torch.load(model_path, map_location=torch.device("cpu"), weights_only=True)
-    checkpoint['model'] = {key: value for key, value in checkpoint['model'].items() if 'cls' not in key and 'clip_model' not in key}
+        full_cp_name = f"{hp['cp'].split(' - ')[0]}/{hp['cp']}"
+        model_path = f"{args.cp_path}/{full_cp_name}"
 
-    model.load_state_dict(checkpoint['model'])
+        checkpoint = torch.load(model_path, map_location=torch.device("cpu"), weights_only=True)
+        checkpoint['model'] = {key: value for key, value in checkpoint['model'].items() if 'cls' not in key and 'clip_model' not in key}
+
+        model.load_state_dict(checkpoint['model'])
     
+
+    else:
+        model = None
+        checkpoint = None
+
     config = {
     "batch_size": hp['batch'],
     "lr_ff": hp['lr_ff'],
@@ -246,10 +273,10 @@ def main(pg, args):
         wandb.login(key = args.wandb_key)
 
     if args.save_predictions: 
-        if not os.path.isdir(f"Predictions/test-in-min"):
-            os.mkdir(f"Predictions/test-in-min") 
-        if not os.path.isdir(f"Predictions/best"):
-            os.mkdir(f"Predictions/best") 
+        if not os.path.isdir(f"../Predictions/test-in-min"):
+            os.mkdir(f"../Predictions/test-in-min") 
+        if not os.path.isdir(f"../Predictions/best"):
+            os.mkdir(f"../Predictions/best") 
     
     print ("start finetuning")
 
@@ -342,7 +369,7 @@ def parse_args():
     parser.add_argument('-batch', default=[64], nargs='+', type=int, help='Batch size (default: 64).')
     parser.add_argument('-d_ff', default=[512], nargs='+', type=int, help='Dimension of the feed-forward middle layers.')
     parser.add_argument('-layers', default=[3], nargs='+', type=int, help='Number of feed-forward middle layers.')
-    parser.add_argument('-augmentation', default=["default"], nargs='+', type=str, choices=["none", "default", "intense"], help='Level of data augmentation: "none", "default", or "intense".')
+    parser.add_argument('-augmentation', default=["intense"], nargs='+', type=str, choices=["none", "default", "intense"], help='Level of data augmentation: "none", "default", or "intense".')
 
     parser.add_argument('-epochs_cp', default=0, type=int, help='Number of epochs between checkpoints.')
     parser.add_argument('-log_every', default=5, type=int, help='Iteration interval for logging.')

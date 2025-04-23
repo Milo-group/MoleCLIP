@@ -74,7 +74,7 @@ def R_group_replacement(mol):
     
     R_masks = []
     mw = Chem.RWMol(mol)
-    symbols = ['C', 'O', 'N', 'S', 'F', 'Cl', 'Br', 'I']
+    symbols = ['O', 'N', 'S', 'F', 'Cl', 'Br', 'I']
     atoms = len(list(mol.GetAtoms()))
     
     for symbol in symbols:
@@ -93,8 +93,7 @@ def R_group_replacement(mol):
                     if bond.GetBeginAtomIdx() == idx:
                         symbol_R_mask.append([idx, bond.GetEndAtomIdx()])
                     else:
-                        symbol_R_mask.append([idx, bond.GetBeginAtomIdx()])
-        
+                        symbol_R_mask.append([idx, bond.GetBeginAtomIdx()])           
         R_masks.append(symbol_R_mask)
                  
                 

@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import DataLoader, Subset, Dataset 
 
 import pandas as pd
+import numpy as np
 import csv
 from PIL import Image
 import cv2
@@ -41,6 +42,21 @@ class DatasetImages(Dataset):
             if self.len_dataset != len(self.smiles):
                 raise(Exception(f"Number of images ({self.len_dataset} not equal to number of smiles {self.data_df.shape[0]})"))
         
+        else:
+            self.len_dataset = len(self.smiles)
+
+        if dataset_type == "fp":
+            from rdkit import Chem
+            from rdkit.Chem import AllChem
+
+            self.fps = []
+            for smi in self.smiles:
+                mol = Chem.MolFromSmiles(smi)
+                
+                fingerprint = AllChem.GetMorganFingerprintAsBitVect(mol, 2)
+                fingerprint = torch.tensor(np.array(fingerprint, dtype=np.float32))
+
+                self.fps.append(fingerprint)
 
     def get_image(self, img_name):
         
@@ -59,11 +75,17 @@ class DatasetImages(Dataset):
             else:
                 output = [self.get_image(idx).float().to(self.device)]
 
-        else:
+        if self.dataset_type == "smiles":
             if self.uselabels:
                 output = [self.get_image(self.smiles[idx]).float().to(self.device), torch.tensor([float(i) for i in self.labels[idx][1]]).to(self.device)]
             else:
                 output = [self.get_image(self.smiles[idx]).float().to(self.device)]
+
+        if self.dataset_type == "fp":
+            if self.uselabels:
+                output = [self.fps[idx].float().to(self.device), torch.tensor([float(i) for i in self.labels[idx][1]]).to(self.device)]
+            else:
+                output = [self.fps[idx].float().to(self.device)]
 
         return output
 

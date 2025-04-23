@@ -20,13 +20,16 @@ from tqdm import tqdm
 
 import wandb
 
-def save_checkpoint(model, optim, cp_path, run_name, epoch, step, temp = False, scheduler=None, optim2=None):
+def save_checkpoint(model, optim, cp_path, run_name, epoch, step, temp = False, scheduler=None, optim2=None, head = None):
 
     if not os.path.isdir(f"{cp_path}/{run_name}"):
         os.mkdir(f"{cp_path}/{run_name}")    
         
     save_dict = {'model': model.state_dict(), 'optimizer': optim.state_dict(),
-                    'epoch':epoch, 'step':step, 'optimizer2': optim2.state_dict()} 
+                'epoch':epoch, 'step':step, 'optimizer2': optim2.state_dict()}
+
+    if head != None:
+        save_dict.update({'head': head.state_dict()})
 
     if scheduler != None:
         save_dict.update({'scheduler': scheduler.state_dict()})  

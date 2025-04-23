@@ -6,8 +6,9 @@ from tqdm import tqdm
 from sklearn.metrics import  roc_auc_score, recall_score, precision_score, accuracy_score
 
 def ft_eval(model, ff_head, val_dataset, labels_len = 1, task = "classification", device = "cuda", subset = "val"):
-
-    model.eval()
+    
+    if model != None:
+        model.eval()
     ff_head.eval()
 
     data = iter(val_dataset)
@@ -17,10 +18,14 @@ def ft_eval(model, ff_head, val_dataset, labels_len = 1, task = "classification"
 
     for it in tqdm(range(len(data))):
 
-        images, labels = next(data)
-
-        embeddings = model.model_image(images).float()
-        output = ff_head(embeddings)
+        if model != None:
+            images, labels = next(data)
+            embeddings = model.model_image(images).float()
+            output = ff_head(embeddings)
+        
+        else:
+            fp, labels = next(data)
+            output = ff_head(fp)
         
         if task == "classification":
             output = torch.sigmoid(output)
