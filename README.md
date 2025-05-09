@@ -87,3 +87,9 @@ Several arguments can be added to customize the finetuning process:
 1. If you prefer to use custom pretrained weights, the pretraining checkpoints are saved in the MolCLIP/Checkpoints directory. Each checkpoint is automatically organized within a unique folder corresponding to the pretraining run. The checkpoints follow this naming convention:{run_name}/{run_name-version}.pth. To start a finetuning session with a specific checkpoint, add the argument **-cp_name '{run_name-version}.pth'**
 2. **-dataset_type smiles:** Use this to run finetuning without pre-generated images, generating them on-the-fly.
 3. **-lr_bb, -lr_ff, -wd, -batch, -augmentation, and more:** These are hyperparameters for the finetuning process. You can specify multiple values for each to perform hyperparameter optimization. For example: **-lr_ff 0.001 0.0004 0.0001**
+
+
+### Drug-Target Affinity (DTA) Prediction
+To perform DTA prediction:
+1. Preprocess the datasets by following the instructions provided in `MoleCLIP/Datasets/README.md`.
+2. Once preprocessing is complete, run the fine-tuning script: python Finetune_DTA.py

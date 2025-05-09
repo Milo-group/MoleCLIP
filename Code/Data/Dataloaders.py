@@ -248,3 +248,28 @@ def Load_contrastive_dataset (datasets_path, dataset_name, dataset_type = 'image
     
     return train_dataset, val_dataset, full_dataset.classes
 
+class DTADataset(Dataset):
+    def __init__(self, dataset, mode = "train", device="cuda"):
+        self.device = device
+
+        data, _ = torch.load(f"../Datasets/Finetuning_DTA/data/processed/{dataset}_{mode}.pt")
+
+        self.y = data.y
+        self.smiles = data.smiles
+        self.targets = data.target
+
+        self.imgs_dict = torch.load("../Datasets/Finetuning_DTA/data/processed/smile_image.pt")
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, idx):
+
+        sample = (
+                self.y[idx].to(self.device),
+                self.smiles[idx],
+                self.imgs_dict[self.smiles[idx]].float().to(self.device),
+                torch.tensor(self.targets[idx], dtype=torch.long).to(self.device)
+            )
+
+        return sample

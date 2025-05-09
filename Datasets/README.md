@@ -7,3 +7,9 @@ To generate the necessary CSV file and corresponding pretraining images:
 
 ## Finetuning
 For finetuning, the dataset should be a CSV file containing three columns: indices, smiles, and labels. The labels should be numeric, representing the target values. If a molecule has multiple labels, separate them with spaces. The CSV file should be placed in the Datasets folder within a subfolder named after the dataset. For example, for the BACE dataset, the file path should be: MoleCLIP/Datasets/Finetuning/bace/bace.csv
+
+## Finetuning_DTA
+To prepare the data for fine-tuning on the DTA task, follow these steps:
+1. Clone or download the KIBA and Davis dataset folders from the [GraphDTA repository](https://github.com/thinng/GraphDTA/tree/master).
+2. Copy the dataset folders into the current directory.
+3. Run the following command to preprocess the data: python create_data.py

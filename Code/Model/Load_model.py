@@ -30,6 +30,32 @@ def create_mlp(input_dim = 512, inner_layers = 2, inner_dim = 1024, output_dim =
 
     return mlp
 
+class Conv1D(torch.nn.Module):
+    def __init__(self,  num_features_xt=25, n_filters=32, embed_dim=128, output_dim=128):
+
+        super(Conv1D, self).__init__()
+
+        # 1D convolution on protein sequence
+        self.embedding_xt = nn.Embedding(num_features_xt + 1, embed_dim)
+        self.conv_xt_1 = nn.Conv1d(in_channels=1000, out_channels=n_filters, kernel_size=8)
+        self.fc1_xt = nn.Linear(32*121, output_dim)
+
+
+    def forward(self, target):
+
+        # target is the protein sequence
+
+        print (target.shape)
+        embedded_xt = self.embedding_xt(target)
+        print (embedded_xt.shape)
+        conv_xt = self.conv_xt_1(embedded_xt)
+        print (conv_xt.shape)
+        # flatten
+        xt = conv_xt.view(-1, 32 * 121)
+        xt = self.fc1_xt(xt)
+
+        return xt
+
 class Image_encoding_CLIP(nn.Module):
     def __init__(self, model) :
         super(Image_encoding_CLIP, self).__init__()
