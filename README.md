@@ -1,5 +1,5 @@
 # MoleCLIP
-This repository accompanies the article: ["Data Efficient Molecular Image Representation Learning using Foundation Models"](https://chemrxiv.org/engage/chemrxiv/article-details/6789436e81d2151a026cdc3d) 
+This repository accompanies the article: ["Data Efficient Molecular Image Representation Learning using Foundation Models"](https://pubs.rsc.org/en/content/articlelanding/2025/sc/d5sc00907c) 
 ## Background
 MoleCLIP is a molecular representation learning framework that accepts images of molecules as inputs and adopts a ViT(visual transformer) architecture initialized with weights from OpenAI’s CLIP (Contrastive Language–Image Pretraining).
 The reliance on CLIP as a foundation model enables MoleCLIP to train in a few-shot manner on significantly less molecular pretraining data than training from scratch. Additionally, it contributes to MoleCLIP's robustness to distribution shifts, which is the ability to maintain performance on new tasks or domains that differ from those used in training.
